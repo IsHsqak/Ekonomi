@@ -177,3 +177,7 @@ p  { margin: 0; }
 .månadsrad { display: grid; grid-template-columns: 1.3fr 0.8fr 1.1fr 1.1fr; column-gap: 8px; align-items: center; padding: 8px 16px; }
 .månadsrad span:not(:first-child) { text-align: right; white-space: nowrap; }
 .rubrikrad { min-height: 44px; font-size: 12px; font-weight: 600; color: var(--dämpad); }
+
+/* ---------- Påminnelse om säkerhetskopia ---------- */
+.påminnelse { background: #FFF4E5; border: 1px solid #F0C48A; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.påminnelse p { font-weight: 500; }

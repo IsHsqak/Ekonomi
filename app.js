@@ -207,6 +207,7 @@ function läsData() {
 function sparaData() {
   try {
     localStorage.setItem(LAGRINGSNAMN, JSON.stringify(data));
+    markeraÄndrat();                                   // så att påminnelsen om säkerhetskopia vet att något är nytt
   } catch (fel) {
     alert('Det gick inte att spara. Ändringen finns bara kvar tills appen stängs.');
   }
@@ -264,7 +265,7 @@ function ritaPengar() {
   var nr = läge.kvartal;
   var n = nyckeltal(data, nr);
   var värden = data.varden[kvNyckel(nr)] || {};
-  var html = '<h1>Pengar</h1>';
+  var html = '<h1>Pengar</h1>' + påminnelseHtml();
 
   // Helt ny app: erbjud att läsa in historiken.
   if (data.poster.length === 0) {
@@ -437,12 +438,6 @@ function sparaNy() {
   gåTill('ändra');                                    // gå direkt till att fylla i värdet
 }
 
-/* ---------- Skärmar som kommer senare ---------- */
-
-function ritaKommer(rubrik, text) {
-  return '<h1>' + rubrik + '</h1><section class="kort"><div class="kort-innehåll" style="padding-top: 16px"><p class="dämpad">' + text + '</p></div></section>';
-}
-
 /* ---------- Rita och navigera ---------- */
 
 function rita() {
@@ -450,7 +445,7 @@ function rita() {
   if (läge.vy === 'ändra') html = ritaÄndra();
   else if (läge.vy === 'ny') html = ritaNy();
   else if (läge.vy.indexOf('bil') === 0) html = ritaBilVy();        // alla Bilar-skärmar ligger i bilar.js
-  else if (läge.vy === 'installningar') html = ritaKommer('Inställningar', 'Säkerhetskopiering byggs i steg 4.');
+  else if (läge.vy === 'installningar') html = ritaInställningar();  // ligger i installningar.js
   else html = ritaPengar();
 
   document.getElementById('app').innerHTML = html;
@@ -472,8 +467,8 @@ function gåTill(vy) {
   window.scrollTo(0, 0);
 }
 
-// Läser in en fil med historik (eller senare: en säkerhetskopia).
-function läsInFil(fil) {
+// Läser in en fil: historik från Excel eller en säkerhetskopia. "efter" körs när det är klart.
+function läsInFil(fil, efter) {
   var läsare = new FileReader();
   läsare.onload = function () {
     try {
@@ -489,6 +484,7 @@ function läsInFil(fil) {
       }
       sparaData();
       rita();
+      if (efter) efter();
     } catch (fel) {
       alert('Filen gick inte att läsa. Kontrollera att du valde rätt fil.');
     }
@@ -513,7 +509,7 @@ function vidTryck(händelse) {
   var knapp = händelse.target.closest('[data-gör]');
   if (!knapp) return;
   var gör = knapp.getAttribute('data-gör');
-  if (bilTryck(gör, knapp)) return;                    // tryck som hör till Bilar sköts i bilar.js
+  if (bilTryck(gör, knapp) || instTryck(gör)) return;                    // tryck som hör till Bilar sköts i bilar.js
 
   if (gör === 'förra') { läge.kvartal--; rita(); }
   else if (gör === 'nästa') { läge.kvartal++; rita(); }
@@ -557,10 +553,14 @@ function starta() {
     else sparaNy();
   });
   document.addEventListener('change', function (h) {
+    if (h.target.id === 'återställfil' && h.target.files[0]) return återställFrånFil(h.target.files[0]);
     if ((h.target.id === 'filväljare' || h.target.id === 'bilfil') && h.target.files[0]) läsInFil(h.target.files[0]);
   });
 
   rita();
+
+  // Be webbläsaren att inte rensa appens lagring om telefonen får ont om plats.
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
 
   // Slå på offline-stödet (sw.js). Det fungerar bara när appen ligger på en https-adress,
   // inte när man dubbelklickar på filen på datorn.

@@ -11,7 +11,7 @@
   Den rör bara appens KOD. Dina siffror ligger i localStorage och berörs inte.
 */
 var KOPIA = 'ekonomi-app-filer';
-var FILER = ['./', 'index.html', 'style.css', 'app.js', 'bilar.js', 'manifest.webmanifest', 'ikoner/ikon-180.png'];
+var FILER = ['./', 'index.html', 'style.css', 'app.js', 'bilar.js', 'installningar.js', 'manifest.webmanifest', 'ikoner/ikon-180.png'];
 
 self.addEventListener('install', function (händelse) {
   händelse.waitUntil(caches.open(KOPIA).then(function (c) { return c.addAll(FILER); }));
