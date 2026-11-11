@@ -445,7 +445,7 @@ function rita() {
   if (läge.vy === 'ändra') html = ritaÄndra();
   else if (läge.vy === 'ny') html = ritaNy();
   else if (läge.vy.indexOf('bil') === 0) html = ritaBilVy();        // alla Bilar-skärmar ligger i bilar.js
-  else if (läge.vy === 'installningar') html = ritaInställningar();  // ligger i installningar.js
+  else if (läge.vy.indexOf('inst') === 0) html = ritaInstVy();      // alla Inställningar-skärmar ligger i installningar.js
   else html = ritaPengar();
 
   document.getElementById('app').innerHTML = html;
@@ -453,6 +453,7 @@ function rita() {
   // Markera rätt flik. Ändra- och ny-skärmen hör till Pengar.
   var flik = (läge.vy === 'ändra' || läge.vy === 'ny') ? 'pengar' : läge.vy;
   if (läge.vy.indexOf('bil') === 0) flik = 'bilar';
+  if (läge.vy.indexOf('inst') === 0) flik = 'installningar';
   Array.prototype.forEach.call(document.querySelectorAll('.flik'), function (knapp) {
     knapp.classList.toggle('vald', knapp.getAttribute('data-vy') === flik);
   });
@@ -509,7 +510,7 @@ function vidTryck(händelse) {
   var knapp = händelse.target.closest('[data-gör]');
   if (!knapp) return;
   var gör = knapp.getAttribute('data-gör');
-  if (bilTryck(gör, knapp) || instTryck(gör)) return;                    // tryck som hör till Bilar sköts i bilar.js
+  if (bilTryck(gör, knapp) || instTryck(gör, knapp)) return;                    // tryck som hör till Bilar sköts i bilar.js
 
   if (gör === 'förra') { läge.kvartal--; rita(); }
   else if (gör === 'nästa') { läge.kvartal++; rita(); }
@@ -548,7 +549,7 @@ function starta() {
   document.addEventListener('submit', function (h) {
     h.preventDefault();                                // hindra webbläsaren från att ladda om sidan
     var formulär = h.target.getAttribute('data-formulär');
-    if (bilSpara(formulär)) return;                    // formulär som hör till Bilar sköts i bilar.js
+    if (bilSpara(formulär) || instSpara(formulär)) return;   // formulär som hör till Bilar och Inställningar sköts i deras filer
     if (formulär === 'ändra') sparaÄndring();
     else sparaNy();
   });

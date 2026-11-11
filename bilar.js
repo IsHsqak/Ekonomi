@@ -285,7 +285,8 @@ function ritaBilFormulär() {
     fältHtml('bprocent', 'Värdeminskning per år', bil ? String(Math.round(bil.vardeminskning * 1000) / 10).replace('.', ',') : '15', '%', 'decimal') +
     (bil ? '' : fältHtml('bår', 'Första året', String(new Date().getFullYear()), '', 'numeric')) +
     '<p class="liten dämpad">Värdeminskningen räknas varje år på det värde som är kvar, precis som i Excel-arket.</p>' +
-    felRad() + '<button type="submit" class="knapp">Spara</button></form>';
+    felRad() + '<button type="submit" class="knapp">Spara</button></form>' +
+    (bil ? '<button type="button" class="knapp varning" data-gör="bil-ta-bort">Ta bort bilen och all dess historik</button>' : '');
 }
 
 /* =====================================================================
@@ -314,6 +315,14 @@ function bilTryck(gör, knapp) {
   else if (gör === 'bil-välj') { läge.bilId = knapp.getAttribute('data-id'); läge.bilÅr = null; gåTill('bilar'); }
   else if (gör === 'bil-ny') { läge.nyBil = true; gåTill('bil-formulär'); }
   else if (gör === 'bil-ändra') { läge.nyBil = false; gåTill('bil-formulär'); }
+  else if (gör === 'bil-ta-bort') {
+    if (confirm('Ta bort "' + bil.namn + '" och allt som fyllts i för den? Det går inte att ångra.')) {
+      data.bilar.splice(data.bilar.indexOf(bil), 1);
+      läge.bilId = null; läge.bilÅr = null;
+      sparaData();
+      gåTill('bilar');
+    }
+  }
   else if (gör === 'bil-välj-fil') document.getElementById('bilfil').click();
   else if (gör === 'bil-nytt-år') {
     // Nytt år börjar med förra årets slutmätarställning.
