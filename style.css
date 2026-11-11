@@ -1,0 +1,147 @@
+@charset "UTF-8";
+/*
+  style.css är appens UTSEENDE: färger, storlekar, avstånd.
+  Varje block börjar med VAD som ska se ut på ett visst sätt (t.ex. .kort)
+  och innehåller sedan HUR (t.ex. background: vit).
+*/
+
+/* Färgerna samlade på ett ställe. Ändra här så ändras de i hela appen. */
+:root {
+  --bakgrund: #F2F3F5;
+  --kort: #FFFFFF;
+  --text: #17202A;
+  --dämpad: #5A6572;
+  --linje: #E3E6EA;
+  --accent: #2548B8;      /* blå: knappar, länkar och plus-värden */
+  --minus: #A8480A;       /* orange: minus-värden */
+  --mörk: #17202A;
+  --mörk-dämpad: #C5CBD3;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bakgrund);
+  color: var(--text);
+  /* Telefonens egen typsnitt. Då behövs inget laddas ner och appen fungerar utan nät. */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;   /* siffror lika breda, så att kolumner linjerar */
+  -webkit-text-size-adjust: 100%;
+}
+
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+
+/* Ytan där skärmarna ritas. Maxbredden gör att den ser ut som en telefon även på datorn. */
+#app {
+  max-width: 480px;
+  margin: 0 auto;
+  /* env(...) är utrymmet som iPhone behöver för klocka/kamera upptill och hemstrecket nertill. */
+  padding: calc(env(safe-area-inset-top) + 24px) 16px calc(env(safe-area-inset-bottom) + 100px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+h1 { margin: 0; font-size: 30px; font-weight: 700; }
+h2 { margin: 0; font-size: 15px; font-weight: 700; letter-spacing: 0.02em; }
+p  { margin: 0; }
+.dämpad { color: var(--dämpad); }
+.liten  { font-size: 13px; line-height: 1.4; }
+.plus   { color: var(--accent); }
+.minus  { color: var(--minus); }
+
+/* ---------- Kvartalsväljaren ---------- */
+.kvartal {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--kort); border-radius: 12px; padding: 2px 4px;
+  font-weight: 600;
+}
+.pil {
+  width: 44px; height: 44px; border: 0; background: transparent;
+  display: flex; align-items: center; justify-content: center;
+}
+.pil:disabled { opacity: 0.25; cursor: default; }
+.pil svg, .tillbaka svg, .rad svg {
+  width: 18px; height: 18px; fill: none; stroke: currentColor;
+  stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+}
+
+/* ---------- Det mörka kortet med nyckeltal ---------- */
+.nyckeltal {
+  background: var(--mörk); color: #FFFFFF; border-radius: 16px; padding: 20px 16px;
+  display: flex; flex-direction: column; gap: 16px;
+}
+.nyckeltal .etikett { font-size: 12px; color: var(--mörk-dämpad); }
+.nyckeltal .topp { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.nyckeltal .stor { font-size: 34px; font-weight: 700; line-height: 1.1; }
+.nyckeltal .procent {
+  padding: 4px 10px; border-radius: 999px; background: #2B3A4A; font-weight: 600;
+}
+.nyckeltal .rutnät { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.nyckeltal .rutnät div, .nyckeltal .topp div { display: flex; flex-direction: column; gap: 3px; }
+.nyckeltal .höger { align-items: flex-end; padding-bottom: 4px; }
+.nyckeltal b { font-weight: 600; }
+.nyckeltal .plus  { color: #A9C1FF; }   /* ljusare varianter som syns på mörk bakgrund */
+.nyckeltal .minus { color: #FFB37A; }
+
+/* ---------- Vita kort med rader ---------- */
+.kort { background: var(--kort); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; }
+.kort-rubrik { display: flex; align-items: center; justify-content: space-between; padding: 4px 8px 4px 16px; min-height: 48px; }
+.kort-innehåll { padding: 4px 16px 16px; display: flex; flex-direction: column; gap: 12px; }
+
+.rad {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  width: 100%; min-height: 56px; padding: 8px 12px 8px 16px;
+  border: 0; border-top: 1px solid var(--linje); background: transparent; text-align: left;
+}
+.rad .namn { display: flex; flex-direction: column; gap: 2px; font-weight: 500; }
+.rad .namn small { font-size: 12px; font-weight: 400; color: var(--dämpad); }
+.rad .värde { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+.rad svg { stroke: var(--dämpad); width: 16px; height: 16px; }
+.rad.fast { padding-right: 16px; }                       /* rad som inte går att trycka på */
+.rad.summa { background: #F8F9FA; font-weight: 600; padding-right: 16px; min-height: 52px; }
+
+/* ---------- Knappar ---------- */
+.länkknapp { min-height: 44px; padding: 0 8px; border: 0; background: transparent; color: var(--accent); font-size: 14px; font-weight: 600; }
+.knapp { min-height: 52px; padding: 0 16px; border: 0; border-radius: 14px; background: var(--accent); color: #FFFFFF; font-weight: 600; }
+.knapp.ljus { background: var(--kort); color: var(--text); border: 1px solid #C9CED6; }
+.knapp.varning { background: transparent; color: var(--minus); font-weight: 500; min-height: 48px; }
+.tillbaka { align-self: flex-start; min-height: 44px; margin: 0 0 -8px -8px; padding: 0 8px; border: 0; background: transparent; color: var(--accent); font-weight: 500; display: flex; align-items: center; gap: 4px; }
+
+/* ---------- Formulärfält ---------- */
+.fält { display: flex; flex-direction: column; gap: 6px; }
+.fält label { font-size: 13px; font-weight: 500; color: var(--dämpad); }
+.fält .ruta {
+  display: flex; align-items: center; gap: 8px; min-height: 52px; padding: 0 14px;
+  border: 1px solid #C9CED6; border-radius: 12px; background: var(--kort);
+}
+.fält .ruta:focus-within { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(37, 72, 184, 0.25); }
+.fält input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font-size: 20px; font-weight: 600; }
+.fält .enhet { color: var(--dämpad); }
+.fel { color: var(--minus); font-size: 14px; font-weight: 500; }
+
+.räknas-som {
+  display: flex; align-items: center; justify-content: space-between; min-height: 56px; padding: 0 16px;
+  border-radius: 12px; background: var(--mörk); color: #FFFFFF;
+}
+.räknas-som span { font-size: 14px; color: var(--mörk-dämpad); }
+.räknas-som b { font-size: 22px; }
+
+.stapel { display: flex; flex-direction: column; gap: 8px; }
+
+/* ---------- Flikraden längst ner ---------- */
+.flikar {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  display: flex; background: var(--kort); border-top: 1px solid var(--linje);
+  padding: 8px 8px calc(env(safe-area-inset-bottom) + 8px);
+}
+.flik {
+  flex: 1; min-height: 52px; border: 0; background: transparent; color: var(--dämpad);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  font-size: 12px; font-weight: 500;
+}
+.flik svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.flik.vald { color: var(--accent); font-weight: 600; }
