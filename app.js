@@ -190,12 +190,16 @@ function senasteKvartalMedData(data, före) {
 
 var LAGRINGSNAMN = 'ekonomi-app-v1';
 
-function tomData() { return { format: 'ekonomi-app', version: 1, poster: [], varden: {} }; }
+function tomData() { return { format: 'ekonomi-app', version: 1, poster: [], varden: {}, bilar: [] }; }
 
 function läsData() {
   try {
     var text = localStorage.getItem(LAGRINGSNAMN);
-    if (text) return JSON.parse(text);
+    if (text) {
+      var läst = JSON.parse(text);
+      if (!läst.bilar) läst.bilar = [];              // data som sparades innan Bilar fanns
+      return läst;
+    }
   } catch (fel) { /* om lagringen inte går att läsa börjar vi tomt */ }
   return tomData();
 }
@@ -224,7 +228,8 @@ var läge = {
   vy: 'pengar',        // vilken skärm: pengar, ändra, ny, bilar, installningar
   kvartal: 0,          // vilket kvartal som visas (löpnummer)
   postId: null,        // vilken post som ändras
-  nyTyp: null,         // vilken sorts post som läggs till
+  nyTyp: null,
+  bilId: null, bilÅr: null, fält: null, månad: null, nyBil: false,   // används av bilar.js         // vilken sorts post som läggs till
   visaAlla: false,     // visa även dolda/avslutade poster
   fel: ''              // felmeddelande i formuläret
 };
@@ -444,7 +449,7 @@ function rita() {
   var html;
   if (läge.vy === 'ändra') html = ritaÄndra();
   else if (läge.vy === 'ny') html = ritaNy();
-  else if (läge.vy === 'bilar') html = ritaKommer('Bilar', 'Byggs i steg 3.');
+  else if (läge.vy.indexOf('bil') === 0) html = ritaBilVy();        // alla Bilar-skärmar ligger i bilar.js
   else if (läge.vy === 'installningar') html = ritaKommer('Inställningar', 'Säkerhetskopiering byggs i steg 4.');
   else html = ritaPengar();
 
@@ -452,6 +457,7 @@ function rita() {
 
   // Markera rätt flik. Ändra- och ny-skärmen hör till Pengar.
   var flik = (läge.vy === 'ändra' || läge.vy === 'ny') ? 'pengar' : läge.vy;
+  if (läge.vy.indexOf('bil') === 0) flik = 'bilar';
   Array.prototype.forEach.call(document.querySelectorAll('.flik'), function (knapp) {
     knapp.classList.toggle('vald', knapp.getAttribute('data-vy') === flik);
   });
@@ -472,13 +478,19 @@ function läsInFil(fil) {
   läsare.onload = function () {
     try {
       var inläst = JSON.parse(läsare.result);
-      if (!giltigData(inläst)) throw new Error('fel format');
-      data = inläst;
+      if (inläst && inläst.format === 'ekonomi-app-bilar' && Array.isArray(inläst.bilar)) {
+        data.bilar = inläst.bilar;                    // bilhistorik: byt bara ut bilarna
+      } else if (giltigData(inläst)) {
+        if (!inläst.bilar) inläst.bilar = data.bilar; // pengahistorik: behåll bilarna som redan finns
+        data = inläst;
+        läge.kvartal = startKvartal();
+      } else {
+        throw new Error('fel format');
+      }
       sparaData();
-      läge.kvartal = startKvartal();
       rita();
     } catch (fel) {
-      alert('Filen gick inte att läsa. Kontrollera att det är historik.json.');
+      alert('Filen gick inte att läsa. Kontrollera att du valde rätt fil.');
     }
   };
   läsare.readAsText(fil);
@@ -501,6 +513,7 @@ function vidTryck(händelse) {
   var knapp = händelse.target.closest('[data-gör]');
   if (!knapp) return;
   var gör = knapp.getAttribute('data-gör');
+  if (bilTryck(gör, knapp)) return;                    // tryck som hör till Bilar sköts i bilar.js
 
   if (gör === 'förra') { läge.kvartal--; rita(); }
   else if (gör === 'nästa') { läge.kvartal++; rita(); }
@@ -538,11 +551,13 @@ function starta() {
   });
   document.addEventListener('submit', function (h) {
     h.preventDefault();                                // hindra webbläsaren från att ladda om sidan
-    if (h.target.getAttribute('data-formulär') === 'ändra') sparaÄndring();
+    var formulär = h.target.getAttribute('data-formulär');
+    if (bilSpara(formulär)) return;                    // formulär som hör till Bilar sköts i bilar.js
+    if (formulär === 'ändra') sparaÄndring();
     else sparaNy();
   });
   document.addEventListener('change', function (h) {
-    if (h.target.id === 'filväljare' && h.target.files[0]) läsInFil(h.target.files[0]);
+    if ((h.target.id === 'filväljare' || h.target.id === 'bilfil') && h.target.files[0]) läsInFil(h.target.files[0]);
   });
 
   rita();
